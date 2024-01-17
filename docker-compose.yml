@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  todo-app:
+    build: ./
+    command: ./waitForPostgres.sh db ./apigame
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_PASSWORD=qwerty
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+    - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate:v4.15.2
+    volumes:
+      - ./schema:/migrations
+    entrypoint:
+      [
+        "migrate",
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://postgres:qwerty@db:5432/postgres?sslmode=disable",
+      ]
+    command: ["up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
