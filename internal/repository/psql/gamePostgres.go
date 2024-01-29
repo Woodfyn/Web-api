@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
+	"github.com/sirupsen/logrus"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
 )
 
 const gameTable = "game"
@@ -55,9 +55,12 @@ func (r *GamePostgres) GetAll() ([]domain.Game, error) {
 }
 
 func (r *GamePostgres) GetById(gameId int) (domain.Game, error) {
-	logrus.SetFormatter(new(logrus.JSONFormatter))
 	cacheGame, err := r.mainCache.GetCache(gameId)
 	if err == nil {
+		logrus.WithFields(logrus.Fields{
+			"handler": "GetById",
+			"info":    "fetched from cache",
+		}).Info()
 		return cacheGame, nil
 	}
 

@@ -83,7 +83,7 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 func (h *Handler) deleteGameByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid id parameter")
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
 		return
 	}
 

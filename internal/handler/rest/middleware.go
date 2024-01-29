@@ -1,14 +1,15 @@
 package rest
 
 import (
-	"log"
-	"time"
-
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func loggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("%s: [%s] - %s ", time.Now().Format(time.RFC3339), c.Request.Method, c.Request.URL)
+		logrus.WithFields(logrus.Fields{
+			"method": c.Request.Method,
+			"uri":    c.Request.RequestURI,
+		}).Info()
 	}
 }
