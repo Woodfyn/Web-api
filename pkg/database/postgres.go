@@ -1,4 +1,4 @@
-package repository
+package database
 
 import (
 	"fmt"
@@ -6,20 +6,18 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const gameTable = "game"
-
-type Config struct {
+type ConnInfo struct {
 	Host     string
 	Port     string
 	Username string
-	Password string
-	DBname   string
+	Name     string
 	SSLMode  string
+	Password string
 }
 
-func NewPostgesDB(cfg Config) (*sqlx.DB, error) {
+func NewPostgesDB(cfg ConnInfo) (*sqlx.DB, error) {
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.DBname, cfg.Password, cfg.SSLMode))
+		cfg.Host, cfg.Port, cfg.Username, cfg.Name, cfg.Password, cfg.SSLMode))
 	if err != nil {
 		return nil, err
 	}

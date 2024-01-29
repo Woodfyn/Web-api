@@ -1,16 +1,16 @@
-package handler
+package rest
 
 import (
 	"net/http"
 	"strconv"
 
-	todo "github.com/Woodfyn/Web-api"
+	"github.com/Woodfyn/Web-api/internal/domain"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) addGame(c *gin.Context) {
-	var input todo.Game
+	var input domain.Game
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -28,7 +28,7 @@ func (h *Handler) addGame(c *gin.Context) {
 }
 
 type getAllGameResponse struct {
-	Data []todo.Game `json:"data"`
+	Data []domain.Game `json:"data"`
 }
 
 func (h *Handler) getAllGame(c *gin.Context) {
@@ -66,7 +66,7 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 		return
 	}
 
-	var input todo.UpdateItemInput
+	var input domain.UpdateItemInput
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

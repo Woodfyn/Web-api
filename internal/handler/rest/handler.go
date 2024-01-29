@@ -1,7 +1,7 @@
-package handler
+package rest
 
 import (
-	"github.com/Woodfyn/Web-api/pkg/service"
+	"github.com/Woodfyn/Web-api/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +15,8 @@ func NewHandler(services *service.Service) *Handler {
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
+
+	router.Use(loggingMiddleware())
 
 	api := router.Group("/api")
 	{

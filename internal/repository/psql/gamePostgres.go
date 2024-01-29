@@ -1,14 +1,16 @@
-package repository
+package psql
 
 import (
 	"fmt"
 	"strings"
 
-	todo "github.com/Woodfyn/Web-api"
+	"github.com/Woodfyn/Web-api/internal/domain"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
+
+const gameTable = "game"
 
 type GamePostgres struct {
 	db        *sqlx.DB
@@ -22,7 +24,7 @@ func NewGamePostgres(db *sqlx.DB) *GamePostgres {
 	}
 }
 
-func (r *GamePostgres) Create(game todo.Game) (int, error) {
+func (r *GamePostgres) Create(game domain.Game) (int, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
@@ -35,15 +37,15 @@ func (r *GamePostgres) Create(game todo.Game) (int, error) {
 		return 0, err
 	}
 
-	go func(game todo.Game) {
+	go func(game domain.Game) {
 		r.mainCache.SetCache(game)
 	}(game)
 
 	return game.Id, tx.Commit()
 }
 
-func (r *GamePostgres) GetAll() ([]todo.Game, error) {
-	var games []todo.Game
+func (r *GamePostgres) GetAll() ([]domain.Game, error) {
+	var games []domain.Game
 	getAllGameQuery := fmt.Sprintf(`SELECT id, title, genre, evaluation FROM %s`, gameTable)
 	if err := r.db.Select(&games, getAllGameQuery); err != nil {
 		return nil, err
@@ -52,14 +54,14 @@ func (r *GamePostgres) GetAll() ([]todo.Game, error) {
 	return games, nil
 }
 
-func (r *GamePostgres) GetById(gameId int) (todo.Game, error) {
+func (r *GamePostgres) GetById(gameId int) (domain.Game, error) {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 	cacheGame, err := r.mainCache.GetCache(gameId)
 	if err == nil {
 		return cacheGame, nil
 	}
 
-	var game todo.Game
+	var game domain.Game
 	getGameQuery := fmt.Sprintf(`SELECT id, title, genre, evaluation FROM %s WHERE id = $1`, gameTable)
 	if err := r.db.Get(&game, getGameQuery, gameId); err != nil {
 		return game, err
@@ -69,7 +71,7 @@ func (r *GamePostgres) GetById(gameId int) (todo.Game, error) {
 
 }
 
-func (r *GamePostgres) UpdateById(gameId int, input todo.UpdateItemInput) error {
+func (r *GamePostgres) UpdateById(gameId int, input domain.UpdateItemInput) error {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
 

@@ -1,11 +1,10 @@
-package repository
+package psql
 
 import (
 	"errors"
 	"time"
 
-	todo "github.com/Woodfyn/Web-api"
-
+	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/Woodfyn/inMemoryCache/cache"
 )
 
@@ -24,19 +23,19 @@ func NewGameCache() *GameCache {
 	}
 }
 
-func (c GameCache) SetCache(game todo.Game) {
+func (c GameCache) SetCache(game domain.Game) {
 	c.cache.Set(game.Id, game, TTLCache)
 }
 
-func (c GameCache) GetCache(gameKey int) (todo.Game, error) {
+func (c GameCache) GetCache(gameKey int) (domain.Game, error) {
 	gameInterface, err := c.cache.Get(gameKey)
 	if err != nil {
-		return todo.Game{}, err
+		return domain.Game{}, err
 	}
 
-	game, ok := gameInterface.(todo.Game)
+	game, ok := gameInterface.(domain.Game)
 	if !ok {
-		return todo.Game{}, errors.New("no this type")
+		return domain.Game{}, errors.New("no this type")
 	}
 
 	return game, nil

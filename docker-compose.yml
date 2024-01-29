@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  todo-app:
+  game-app:
     build: ./
     command: ./waitForPostgres.sh db ./apigame
     ports:
