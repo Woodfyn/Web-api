@@ -22,12 +22,17 @@ const (
 	CONFIG_FILE = "main"
 )
 
-func main() {
+func init() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.InfoLevel)
+}
+
+func main() {
 
 	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE)
 	if err != nil {
-		logrus.Fatalf("config is dumb: %s", err.Error())
+		logrus.Fatalf("config is not initialised: %s", err.Error())
 	}
 
 	db, err := database.NewPostgesDB(database.ConnInfo{
@@ -50,17 +55,17 @@ func main() {
 
 	go func() {
 		if err := srv.Run(cfg.Server.Port, handlers.InitRoutes()); err != nil {
-			logrus.Fatalf("port in config is dumb: %s", err.Error())
+			logrus.Fatalf("the port is not specified in the configuration: %s", err.Error())
 		}
 	}()
 
-	logrus.Print("gameApi Started")
+	logrus.Info("SERVER STARTED")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	logrus.Print("gameApi Shutting Down")
+	logrus.Info("SERVER STOPPED")
 
 	if err := srv.Shutdown(context.Background()); err != nil {
 		logrus.Errorf("errer occured on server shutting down: %s", err.Error())
