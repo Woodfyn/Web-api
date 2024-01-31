@@ -1,0 +1,182 @@
+basePath: /api
+definitions:
+  domain.Game:
+    properties:
+      evaluation:
+        type: integer
+      genre:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  rest.errorResponce:
+    properties:
+      message:
+        type: string
+    type: object
+  rest.getAllGameResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/domain.Game'
+        type: array
+    type: object
+  rest.statusResponse:
+    properties:
+      status:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API Server for GameList Application
+  title: GameList API
+  version: "1.0"
+paths:
+  /game:
+    get:
+      consumes:
+      - application/json
+      description: getAll games
+      operationId: get-all
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.getAllGameResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: GetAll
+      tags:
+      - game
+    post:
+      consumes:
+      - application/json
+      description: add new game
+      operationId: add-game
+      parameters:
+      - description: game info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Game'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: AddGame
+      tags:
+      - game
+  /game/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete game by id
+      operationId: delete-game
+      parameters:
+      - description: game id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: DeleteGameByID
+      tags:
+      - game
+    get:
+      consumes:
+      - application/json
+      description: get game by id
+      operationId: get-game-by-id
+      parameters:
+      - description: game id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: GetGameByID
+      tags:
+      - game
+    put:
+      consumes:
+      - application/json
+      description: update game by id
+      operationId: update-game
+      parameters:
+      - description: game id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.statusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: UpdateGameByID
+      tags:
+      - game
+swagger: "2.0"

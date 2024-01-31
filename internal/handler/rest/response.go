@@ -1,9 +1,14 @@
 package rest
 
 import (
+	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+type getAllGameResponse struct {
+	Data []domain.Game `json:"data"`
+}
 
 type errorResponce struct {
 	Message string `json:"message"`
