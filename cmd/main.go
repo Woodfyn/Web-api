@@ -17,6 +17,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// @title GameList API
+// @version 1.0
+// @description API Server for GameList Application
+
+// @host localhost:8000
+// @BasePath /api
+
 const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
