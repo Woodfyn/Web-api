@@ -7,7 +7,7 @@ type Game struct {
 	Evaluation int    `json:"evaluation"`
 }
 
-type UpdateItemInput struct {
+type UpdateGameInput struct {
 	Id         *int    `json:"id"`
 	Title      *string `json:"title" binding:"required"`
 	Genre      *string `json:"genre"`

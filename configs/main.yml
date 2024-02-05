@@ -1,1 +1,5 @@
-port: "8000"
+server:
+  port: "8000"
+
+auth:
+  token_ttl: 15m

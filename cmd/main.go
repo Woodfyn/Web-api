@@ -11,6 +11,7 @@ import (
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/internal/service"
 	"github.com/Woodfyn/Web-api/pkg/database"
+	"github.com/Woodfyn/Web-api/pkg/hash"
 	"github.com/Woodfyn/Web-api/pkg/server"
 	"github.com/sirupsen/logrus"
 
@@ -27,6 +28,7 @@ import (
 const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
+	CONFIG_ENV  = "main"
 )
 
 func init() {
@@ -37,7 +39,8 @@ func init() {
 
 func main() {
 
-	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE)
+	cfg, err := config.New(CONFIG_ENV, CONFIG_DIR, CONFIG_FILE)
+	logrus.Info(cfg)
 	if err != nil {
 		logrus.Fatalf("config is not initialised: %s", err.Error())
 	}
@@ -54,9 +57,15 @@ func main() {
 		logrus.Fatalf("config was not transferred to the db: %s", err.Error())
 	}
 
-	repos := psql.NewRepository(db)
-	services := service.NewService(repos)
-	handlers := rest.NewHandler(services)
+	hasher := hash.NewSHA1Hasher(cfg.Hash.Salt)
+
+	gameRepo := psql.NewGames(db)
+	gameService := service.NewGames(gameRepo)
+
+	userRepo := psql.NewUsers(db)
+	userService := service.NewUsers(userRepo, hasher, []byte(cfg.Auth.Secret), cfg.JWT.TokenTTL)
+
+	handlers := rest.NewHandler(userService, gameService)
 
 	srv := new(server.Server)
 

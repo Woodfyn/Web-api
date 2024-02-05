@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 )
 
@@ -17,29 +19,44 @@ type Config struct {
 	Server struct {
 		Port string `mapstructure:"port"`
 	} `mapstructure:"server"`
+
+	Hash struct {
+		Salt string `mapstructure:"HASH_SALT"`
+	} `mapstructure:"hash"`
+
+	JWT struct {
+		TokenTTL time.Duration `mapstructure:"token_ttl"`
+	} `mapstructure:"auth"`
+
+	Auth struct {
+		Secret string `mapstructure:"AUTH_SECRET"`
+	} `mapstructure:"auth"`
 }
 
-func New(folder, filename string) (*Config, error) {
+func New(envfilename, folder, filename string) (*Config, error) {
 	cfg := new(Config)
-
 	viper.AddConfigPath(folder)
 	viper.SetConfigName(filename)
-
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	if err := viper.Unmarshal(&cfg.Server); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
-	viper.SetConfigFile(".env")
-
+	viper.SetConfigFile(envfilename + ".env")
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
 	if err := viper.Unmarshal(&cfg.DB); err != nil {
+		return nil, err
+	}
+	if err := viper.Unmarshal(&cfg.Hash); err != nil {
+		return nil, err
+	}
+	if err := viper.Unmarshal(&cfg.Auth); err != nil {
 		return nil, err
 	}
 

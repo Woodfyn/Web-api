@@ -1,24 +1,42 @@
 package service
 
 import (
+	"time"
+
 	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
+	"github.com/Woodfyn/Web-api/pkg/hash"
 )
 
-type Game interface {
-	Create(game domain.Game) (int, error)
+type Games interface {
+	Create(book domain.Game) error
+	GetByID(id int) (domain.Game, error)
 	GetAll() ([]domain.Game, error)
-	GetById(gameId int) (domain.Game, error)
-	UpdateById(gameId int, input domain.UpdateItemInput) error
-	DeleteById(gameId int) error
+	Delete(id int) error
+	Update(id int, inp domain.UpdateGameInput) error
 }
 
-type Service struct {
-	Game
+type Users interface {
+	Create(user domain.User) error
+	GetByCredentials(email, password string) (domain.User, error)
 }
 
-func NewService(repos *psql.Repository) *Service {
-	return &Service{
-		Game: NewGameService(repos.Game),
+type Services struct {
+	Games Games
+	Users Users
+}
+
+type Deps struct {
+	Repos  *psql.Repositories
+	Hasher hash.PasswordHasher
+
+	hmacSecret []byte
+	tokenTtl   time.Duration
+}
+
+func NewServices(deps Deps) *Services {
+	return &Services{
+		games: NewServiceGame(deps.Repos),
+		users: NewServiceUser(deps.Repos, deps.Hasher, deps.hmacSecret, deps.tokenTtl),
 	}
 }

@@ -5,20 +5,27 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type Game interface {
-	Create(game domain.Game) (int, error)
+type Users interface {
+	CreateUser(user domain.SignUpInput) (int, error)
+	GetUser(username, password string) (domain.User, error)
+}
+
+type Games interface {
+	Create(game domain.Game) error
 	GetAll() ([]domain.Game, error)
 	GetById(gameId int) (domain.Game, error)
-	UpdateById(gameId int, input domain.UpdateItemInput) error
+	UpdateById(gameId int, input domain.UpdateGameInput) error
 	DeleteById(gameId int) error
 }
 
-type Repository struct {
-	Game
+type Repositories struct {
+	Users Users
+	Games Games
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{
-		Game: NewGamePostgres(db),
+func NewRepositories(db *sqlx.DB) *Repositories {
+	return &Repositories{
+		Users: NewUsers(db),
+		Games: NewGames(db),
 	}
 }
