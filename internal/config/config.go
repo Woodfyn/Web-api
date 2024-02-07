@@ -14,49 +14,60 @@ type Config struct {
 		Name     string `mapstructure:"DB_NAME"`
 		SSLMode  string `mapstructure:"DB_SSLMODE"`
 		Password string `mapstructure:"DB_PASSWORD"`
-	} `mapstructure:"db"`
+	}
 
 	Server struct {
 		Port string `mapstructure:"port"`
 	} `mapstructure:"server"`
 
+	JWT struct {
+		AccessTTL  time.Duration `mapstructure:"access_ttl"`
+		RefreshTTL time.Duration `mapstructure:"refresh_ttl"`
+	} `mapstructure:"jwt"`
+
 	Hash struct {
 		Salt string `mapstructure:"HASH_SALT"`
-	} `mapstructure:"hash"`
-
-	JWT struct {
-		TokenTTL time.Duration `mapstructure:"token_ttl"`
-	} `mapstructure:"auth"`
+	}
 
 	Auth struct {
 		Secret string `mapstructure:"AUTH_SECRET"`
-	} `mapstructure:"auth"`
+	}
 }
 
-func New(envfilename, folder, filename string) (*Config, error) {
-	cfg := new(Config)
-	viper.AddConfigPath(folder)
-	viper.SetConfigName(filename)
-	if err := viper.ReadInConfig(); err != nil {
+func New(folder, filename, envfilename string) (*Config, error) {
+	cfg := &Config{}
+
+	v := viper.New()
+
+	v.SetConfigFile(envfilename + ".env")
+	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	if err := viper.Unmarshal(&cfg); err != nil {
+	if err := v.Unmarshal(&cfg.DB); err != nil {
 		return nil, err
 	}
 
-	viper.SetConfigFile(envfilename + ".env")
-	if err := viper.ReadInConfig(); err != nil {
+	if err := v.Unmarshal(&cfg.Hash); err != nil {
 		return nil, err
 	}
 
-	if err := viper.Unmarshal(&cfg.DB); err != nil {
+	if err := v.Unmarshal(&cfg.Auth); err != nil {
 		return nil, err
 	}
-	if err := viper.Unmarshal(&cfg.Hash); err != nil {
+
+	v.SetConfigName(filename)
+	v.SetConfigType("yaml")
+	v.AddConfigPath(folder)
+	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
-	if err := viper.Unmarshal(&cfg.Auth); err != nil {
+
+	if err := v.Unmarshal(&cfg.Server); err != nil {
+		return nil, err
+	}
+
+	if err := v.Unmarshal(&cfg.JWT); err != nil {
 		return nil, err
 	}
 

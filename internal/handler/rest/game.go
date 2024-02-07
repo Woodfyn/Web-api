@@ -26,7 +26,7 @@ func (h *Handler) addGame(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Create(input)
+	err := h.services.Games.Create(input)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -45,7 +45,7 @@ func (h *Handler) addGame(c *gin.Context) {
 // @Failure 400,500 {object} errorResponce
 // @Router /game [get]
 func (h *Handler) getAllGame(c *gin.Context) {
-	games, err := h.services.GetAll()
+	games, err := h.services.Games.GetAll()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -73,7 +73,7 @@ func (h *Handler) getGameByID(c *gin.Context) {
 		return
 	}
 
-	game, err := h.services.GetByID(id)
+	game, err := h.services.Games.GetById(id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -105,7 +105,7 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.Update(id, input); err != nil {
+	if err := h.services.Games.Update(id, input); err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -130,7 +130,7 @@ func (h *Handler) deleteGameByID(c *gin.Context) {
 		return
 	}
 
-	err = h.services.Delete(id)
+	err = h.services.Games.Delete(id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

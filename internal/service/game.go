@@ -27,10 +27,10 @@ func (s *Game) GetById(gameId int) (domain.Game, error) {
 	return s.repo.GetById(gameId)
 }
 
-func (s *Game) UpdateById(gameId int, input domain.UpdateGameInput) error {
+func (s *Game) Update(gameId int, input domain.UpdateGameInput) error {
 	return s.repo.UpdateById(gameId, input)
 }
 
-func (s *Game) DeleteById(gameId int) error {
+func (s *Game) Delete(gameId int) error {
 	return s.repo.DeleteById(gameId)
 }

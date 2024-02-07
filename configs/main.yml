@@ -1,5 +1,6 @@
 server:
   port: "8000"
 
-auth:
-  token_ttl: 15m
+jwt:
+  access_ttl: 15m
+  refresh_ttl: 30d

@@ -5,9 +5,14 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type TokenSessions interface {
+	Create(token domain.RefreshSession) error
+	Get(token string) (domain.RefreshSession, error)
+}
+
 type Users interface {
-	CreateUser(user domain.SignUpInput) (int, error)
-	GetUser(username, password string) (domain.User, error)
+	Create(inp domain.User) error
+	GetByCredentials(email, password string) (domain.User, error)
 }
 
 type Games interface {
@@ -19,13 +24,15 @@ type Games interface {
 }
 
 type Repositories struct {
-	Users Users
-	Games Games
+	Users  Users
+	Tokens TokenSessions
+	Games  Games
 }
 
 func NewRepositories(db *sqlx.DB) *Repositories {
 	return &Repositories{
-		Users: NewUsers(db),
-		Games: NewGames(db),
+		Users:  NewUsers(db),
+		Tokens: NewTokens(db),
+		Games:  NewGames(db),
 	}
 }

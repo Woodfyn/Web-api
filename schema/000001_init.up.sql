@@ -14,3 +14,11 @@ CREATE TABLE users
     password varchar(255) NOT NULL,
     registered_at timestamp NOT NULL
 );
+
+CREATE TABLE refresh_tokens
+(
+    id serial PRIMARY KEY,
+    user_id int NOT NULL,
+    token varchar(255) NOT NULL,
+    expires_at timestamp NOT NULL
+);

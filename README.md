@@ -4,4 +4,4 @@
 
 # Example of work in cmd/main.go
 
-# Swagger: http://localhost:8000/swagger/index.html#/game/get-all
+# Swagger: http://localhost:8000/swagger/index.html#/
