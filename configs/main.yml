@@ -1,1 +1,6 @@
-port: "8000"
+server:
+  port: "8000"
+
+jwt:
+  access_ttl: 15m
+  refresh_ttl: 30d

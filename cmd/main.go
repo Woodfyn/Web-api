@@ -5,12 +5,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Woodfyn/Web-api/internal/config"
 	"github.com/Woodfyn/Web-api/internal/handler/rest"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/internal/service"
+	"github.com/Woodfyn/Web-api/pkg/auth"
 	"github.com/Woodfyn/Web-api/pkg/database"
+	"github.com/Woodfyn/Web-api/pkg/hash"
 	"github.com/Woodfyn/Web-api/pkg/server"
 	"github.com/sirupsen/logrus"
 
@@ -27,6 +30,7 @@ import (
 const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
+	CONFIG_ENV  = "main"
 )
 
 func init() {
@@ -37,7 +41,8 @@ func init() {
 
 func main() {
 
-	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE)
+	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE, CONFIG_ENV)
+	logrus.Info(cfg)
 	if err != nil {
 		logrus.Fatalf("config is not initialised: %s", err.Error())
 	}
@@ -54,14 +59,30 @@ func main() {
 		logrus.Fatalf("config was not transferred to the db: %s", err.Error())
 	}
 
-	repos := psql.NewRepository(db)
-	services := service.NewService(repos)
-	handlers := rest.NewHandler(services)
+	hasher := hash.NewSHA1Hasher(cfg.Hash.Salt)
+	tokenManager, err := auth.NewManager(cfg.Auth.Secret)
+	if err != nil {
+		logrus.Fatalf("No init token manager: %s", err.Error())
+	}
+
+	repos := psql.NewRepositories(db)
+
+	deps := service.Deps{
+		Repos:           repos,
+		Hasher:          hasher,
+		TokenManager:    tokenManager,
+		AccessTokenTTL:  15 * time.Minute,
+		RefreshTokenTTL: 1 * time.Hour,
+	}
+
+	service := service.NewServices(deps)
+
+	handlers := rest.NewHandler(service, tokenManager)
 
 	srv := new(server.Server)
 
 	go func() {
-		if err := srv.Run(cfg.Server.Port, handlers.InitRoutes()); err != nil {
+		if err := srv.Run("8000", handlers.InitRoutes()); err != nil {
 			logrus.Fatalf("the port is not specified in the configuration: %s", err.Error())
 		}
 	}()
@@ -74,7 +95,7 @@ func main() {
 
 	logrus.Info("SERVER STOPPED")
 
-	if err := srv.Shutdown(context.Background()); err != nil {
+	if err := srv.Shutdown(context.TODO()); err != nil {
 		logrus.Errorf("errer occured on server shutting down: %s", err.Error())
 	}
 

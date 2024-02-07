@@ -5,46 +5,45 @@ import (
 	"strings"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
-	"github.com/sirupsen/logrus"
-
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
-const gameTable = "game"
+const gameTable = "games"
 
-type GamePostgres struct {
+type GamesPosegres struct {
 	db        *sqlx.DB
 	mainCache *GameCache
 }
 
-func NewGamePostgres(db *sqlx.DB) *GamePostgres {
-	return &GamePostgres{
+func NewGames(db *sqlx.DB) *GamesPosegres {
+	return &GamesPosegres{
 		db:        db,
 		mainCache: NewGameCache(),
 	}
 }
 
-func (r *GamePostgres) Create(game domain.Game) (int, error) {
+func (r *GamesPosegres) Create(game domain.Game) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	createGameQuery := fmt.Sprintf(`INSERT INTO %s (title, genre, evaluation) VALUES ($1, $2, $3) RETURNING id`, gameTable)
 	err = tx.QueryRow(createGameQuery, game.Title, game.Genre, game.Evaluation).Scan(&game.Id)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return err
 	}
 
 	go func(game domain.Game) {
 		r.mainCache.SetCache(game)
 	}(game)
 
-	return game.Id, tx.Commit()
+	return tx.Commit()
 }
 
-func (r *GamePostgres) GetAll() ([]domain.Game, error) {
+func (r *GamesPosegres) GetAll() ([]domain.Game, error) {
 	var games []domain.Game
 	getAllGameQuery := fmt.Sprintf(`SELECT id, title, genre, evaluation FROM %s`, gameTable)
 	if err := r.db.Select(&games, getAllGameQuery); err != nil {
@@ -54,7 +53,7 @@ func (r *GamePostgres) GetAll() ([]domain.Game, error) {
 	return games, nil
 }
 
-func (r *GamePostgres) GetById(gameId int) (domain.Game, error) {
+func (r *GamesPosegres) GetById(gameId int) (domain.Game, error) {
 	cacheGame, err := r.mainCache.GetCache(gameId)
 	if err == nil {
 		logrus.WithFields(logrus.Fields{
@@ -74,7 +73,7 @@ func (r *GamePostgres) GetById(gameId int) (domain.Game, error) {
 
 }
 
-func (r *GamePostgres) UpdateById(gameId int, input domain.UpdateItemInput) error {
+func (r *GamesPosegres) UpdateById(gameId int, input domain.UpdateGameInput) error {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
 
@@ -114,7 +113,7 @@ func (r *GamePostgres) UpdateById(gameId int, input domain.UpdateItemInput) erro
 	return err
 }
 
-func (r *GamePostgres) DeleteById(gameId int) error {
+func (r *GamesPosegres) DeleteById(gameId int) error {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, gameTable)
 	_, err := r.db.Exec(query, gameId)
 
