@@ -13,6 +13,32 @@ definitions:
     required:
     - title
     type: object
+  domain.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.SignUpInput:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
   rest.errorResponce:
     properties:
       message:
@@ -37,6 +63,92 @@ info:
   title: GameList API
   version: "1.0"
 paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: refresh
+      operationId: refresh
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: refresh
+      tags:
+      - auth
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: login
+      operationId: login
+      parameters:
+      - description: credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: signIn
+      tags:
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: create account
+      operationId: create-account
+      parameters:
+      - description: account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponce'
+      summary: signUp
+      tags:
+      - auth
   /game:
     get:
       consumes:
@@ -58,6 +170,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
+      security:
+      - ApiKeyAuth: []
       summary: GetAll
       tags:
       - game
@@ -88,6 +202,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
+      security:
+      - ApiKeyAuth: []
       summary: AddGame
       tags:
       - game
@@ -118,6 +234,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
+      security:
+      - ApiKeyAuth: []
       summary: DeleteGameByID
       tags:
       - game
@@ -147,6 +265,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
+      security:
+      - ApiKeyAuth: []
       summary: GetGameByID
       tags:
       - game
@@ -176,7 +296,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
+      security:
+      - ApiKeyAuth: []
       summary: UpdateGameByID
       tags:
       - game
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

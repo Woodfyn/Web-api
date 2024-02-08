@@ -35,7 +35,7 @@ type Config struct {
 }
 
 func New(folder, filename, envfilename string) (*Config, error) {
-	cfg := &Config{}
+	cfg := new(Config)
 
 	v := viper.New()
 
@@ -57,19 +57,19 @@ func New(folder, filename, envfilename string) (*Config, error) {
 	}
 
 	v.SetConfigName(filename)
-	v.SetConfigType("yaml")
 	v.AddConfigPath(folder)
+	v.SetConfigType("yml")
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	if err := v.Unmarshal(&cfg.Server); err != nil {
+	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
-	if err := v.Unmarshal(&cfg.JWT); err != nil {
-		return nil, err
-	}
+	// if err := v.Unmarshal(&cfg.JWT); err != nil {
+	// 	return nil, err
+	// }
 
 	return cfg, nil
 }

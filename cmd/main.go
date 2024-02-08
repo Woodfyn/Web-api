@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/Woodfyn/Web-api/internal/config"
 	"github.com/Woodfyn/Web-api/internal/handler/rest"
@@ -26,6 +25,10 @@ import (
 
 // @host localhost:8000
 // @BasePath /api
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 const (
 	CONFIG_DIR  = "configs"
@@ -71,8 +74,8 @@ func main() {
 		Repos:           repos,
 		Hasher:          hasher,
 		TokenManager:    tokenManager,
-		AccessTokenTTL:  15 * time.Minute,
-		RefreshTokenTTL: 1 * time.Hour,
+		AccessTokenTTL:  cfg.JWT.AccessTTL,
+		RefreshTokenTTL: cfg.JWT.RefreshTTL,
 	}
 
 	service := service.NewServices(deps)
@@ -82,7 +85,7 @@ func main() {
 	srv := new(server.Server)
 
 	go func() {
-		if err := srv.Run("8000", handlers.InitRoutes()); err != nil {
+		if err := srv.Run(cfg.Server.Port, handlers.InitRoutes()); err != nil {
 			logrus.Fatalf("the port is not specified in the configuration: %s", err.Error())
 		}
 	}()

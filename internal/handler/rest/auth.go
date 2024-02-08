@@ -11,6 +11,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// @Summary signUp
+// @Tags auth
+// @Description create account
+// @ID create-account
+// @Accept json
+// @Produce json
+// @Param input body domain.SignUpInput true "account info"
+// @Success 200 {integer} integer 1
+// @Failure 400,500 {object} errorResponce
+// @Router /auth/sign-up [post]
 func (h *Handler) signUp(c *gin.Context) {
 	var input domain.SignUpInput
 
@@ -32,6 +42,16 @@ func (h *Handler) signUp(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+// @Summary signIn
+// @Tags auth
+// @Description login
+// @ID login
+// @Accept json
+// @Produce json
+// @Param input body domain.SignInInput true "credentials"
+// @Success 200 {string} string "token"
+// @Failure 400,500 {object} errorResponce
+// @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
 	var input domain.SignInInput
 	if err := c.BindJSON(&input); err != nil {
@@ -63,6 +83,15 @@ func (h *Handler) signIn(c *gin.Context) {
 	})
 }
 
+// @Summary refresh
+// @Tags auth
+// @Description refresh
+// @ID refresh
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "token"
+// @Failure 400,500 {object} errorResponce
+// @Router /auth/refresh [post]
 func (h *Handler) refresh(c *gin.Context) {
 	cookie, err := c.Request.Cookie("Authorization")
 	if err != nil {

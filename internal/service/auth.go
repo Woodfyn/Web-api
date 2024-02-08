@@ -23,7 +23,8 @@ type User struct {
 	refreshTokenTTL time.Duration
 }
 
-func NewServiceUser(repo psql.Users, sessionRepo psql.TokenSessions, hasher PasswordHasher, tokenManager auth.TokenManager, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *User {
+func NewServiceUser(repo psql.Users, sessionRepo psql.TokenSessions, hasher PasswordHasher, tokenManager auth.TokenManager,
+	accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *User {
 	return &User{
 		repo:        repo,
 		sessionRepo: sessionRepo,

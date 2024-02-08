@@ -9,11 +9,6 @@ import (
 	"github.com/Woodfyn/Web-api/pkg/hash"
 )
 
-type Tokens struct {
-	AccessToken  string
-	RefreshToken string
-}
-
 type Games interface {
 	Create(game domain.Game) error
 	GetAll() ([]domain.Game, error)
@@ -45,6 +40,7 @@ type Deps struct {
 func NewServices(deps Deps) *Services {
 	return &Services{
 		Games: NewServiceGame(deps.Repos.Games),
-		Users: NewServiceUser(deps.Repos.Users, deps.Repos.Tokens, deps.Hasher, deps.TokenManager, deps.AccessTokenTTL, deps.RefreshTokenTTL),
+		Users: NewServiceUser(deps.Repos.Users, deps.Repos.Tokens, deps.Hasher, deps.TokenManager,
+			deps.AccessTokenTTL, deps.RefreshTokenTTL),
 	}
 }

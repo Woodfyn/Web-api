@@ -10,6 +10,7 @@ import (
 )
 
 // @Summary AddGame
+// @Security ApiKeyAuth
 // @Tags game
 // @Description add new game
 // @ID add-game
@@ -36,6 +37,7 @@ func (h *Handler) addGame(c *gin.Context) {
 }
 
 // @Summary GetAll
+// @Security ApiKeyAuth
 // @Tags game
 // @Description getAll games
 // @ID get-all
@@ -57,6 +59,7 @@ func (h *Handler) getAllGame(c *gin.Context) {
 }
 
 // @Summary GetGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description get game by id
 // @ID get-game-by-id
@@ -83,6 +86,7 @@ func (h *Handler) getGameByID(c *gin.Context) {
 }
 
 // @Summary UpdateGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description update game by id
 // @ID update-game
@@ -114,6 +118,7 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 }
 
 // @Summary DeleteGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description delete game by id
 // @ID delete-game
