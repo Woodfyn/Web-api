@@ -9,9 +9,9 @@
     "host": "localhost:8000",
     "basePath": "/api",
     "paths": {
-        "/auth/refresh": {
-            "post": {
-                "description": "refresh",
+        "/auth/log-out": {
+            "get": {
+                "description": "logout",
                 "consumes": [
                     "application/json"
                 ],
@@ -21,11 +21,11 @@
                 "tags": [
                     "auth"
                 ],
-                "summary": "refresh",
-                "operationId": "refresh",
+                "summary": "logout",
+                "operationId": "log-out",
                 "responses": {
                     "200": {
-                        "description": "token",
+                        "description": "session",
                         "schema": {
                             "type": "string"
                         }
@@ -46,7 +46,7 @@
             }
         },
         "/auth/sign-in": {
-            "post": {
+            "get": {
                 "description": "login",
                 "consumes": [
                     "application/json"
@@ -72,7 +72,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "token",
+                        "description": "session",
                         "schema": {
                             "type": "string"
                         }

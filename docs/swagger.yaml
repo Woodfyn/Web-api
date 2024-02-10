@@ -63,17 +63,17 @@ info:
   title: GameList API
   version: "1.0"
 paths:
-  /auth/refresh:
-    post:
+  /auth/log-out:
+    get:
       consumes:
       - application/json
-      description: refresh
-      operationId: refresh
+      description: logout
+      operationId: log-out
       produces:
       - application/json
       responses:
         "200":
-          description: token
+          description: session
           schema:
             type: string
         "400":
@@ -84,11 +84,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/rest.errorResponce'
-      summary: refresh
+      summary: logout
       tags:
       - auth
   /auth/sign-in:
-    post:
+    get:
       consumes:
       - application/json
       description: login
@@ -104,7 +104,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: token
+          description: session
           schema:
             type: string
         "400":

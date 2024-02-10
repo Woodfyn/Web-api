@@ -2,23 +2,23 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "github.com/Woodfyn/Web-api/docs"
 	"github.com/Woodfyn/Web-api/internal/service"
-	"github.com/Woodfyn/Web-api/pkg/auth"
 )
 
 type Handler struct {
-	services     *service.Services
-	tokenManager auth.TokenManager
+	services       *service.Services
+	cookieSessions *sessions.CookieStore
 }
 
-func NewHandler(services *service.Services, tokenManager auth.TokenManager) *Handler {
+func NewHandler(services *service.Services, cookieSessions *sessions.CookieStore) *Handler {
 	return &Handler{
-		services:     services,
-		tokenManager: tokenManager,
+		services:       services,
+		cookieSessions: cookieSessions,
 	}
 }
 
@@ -33,14 +33,14 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth.POST("/sign-up", h.signUp)
 		auth.GET("/sign-in", h.signIn)
-		auth.GET("/refresh", h.refresh)
+		auth.GET("/log-out", h.logOut)
 	}
 
 	api := router.Group("/api")
 	{
 		game := api.Group("/game")
 		{
-			game.Use(authMiddleware())
+			game.Use(authMiddleware(h.cookieSessions))
 
 			game.POST("/", h.addGame)
 			game.GET("/", h.getAllGame)

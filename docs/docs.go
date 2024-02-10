@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/refresh": {
-            "post": {
-                "description": "refresh",
+        "/auth/log-out": {
+            "get": {
+                "description": "logout",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,11 +27,11 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "refresh",
-                "operationId": "refresh",
+                "summary": "logout",
+                "operationId": "log-out",
                 "responses": {
                     "200": {
-                        "description": "token",
+                        "description": "session",
                         "schema": {
                             "type": "string"
                         }
@@ -52,7 +52,7 @@ const docTemplate = `{
             }
         },
         "/auth/sign-in": {
-            "post": {
+            "get": {
                 "description": "login",
                 "consumes": [
                     "application/json"
@@ -78,7 +78,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "token",
+                        "description": "session",
                         "schema": {
                             "type": "string"
                         }

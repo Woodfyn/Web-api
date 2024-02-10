@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
+
+const cookieName = "cookie-name"
 
 // @Summary signUp
 // @Tags auth
@@ -49,9 +49,9 @@ func (h *Handler) signUp(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param input body domain.SignInInput true "credentials"
-// @Success 200 {string} string "token"
+// @Success 200 {string} string "session"
 // @Failure 400,500 {object} errorResponce
-// @Router /auth/sign-in [post]
+// @Router /auth/sign-in [get]
 func (h *Handler) signIn(c *gin.Context) {
 	var input domain.SignInInput
 	if err := c.BindJSON(&input); err != nil {
@@ -64,7 +64,13 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.services.Users.SignIn(input)
+	session, err := h.cookieSessions.Get(c.Request, cookieName)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sessionWithValue, err := h.services.Users.SignIn(input, session)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			handleNotFoundError(c, err)
@@ -75,50 +81,44 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	c.Header("Set-Cookie", "Authorization=Bearer "+refreshToken+"; HttpOnly; Path=/; Max-Age=3600")
-	c.Header("Content-Type", "application/json")
-
-	c.JSON(http.StatusOK, map[string]string{
-		"token": accessToken,
-	})
-}
-
-// @Summary refresh
-// @Tags auth
-// @Description refresh
-// @ID refresh
-// @Accept json
-// @Produce json
-// @Success 200 {string} string "token"
-// @Failure 400,500 {object} errorResponce
-// @Router /auth/refresh [post]
-func (h *Handler) refresh(c *gin.Context) {
-	cookie, err := c.Request.Cookie("Authorization")
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	refreshToken, err := getTokenFromCookie(cookie.Value)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	logrus.Info(cookie.Value)
-
-	accessToken, refreshToken, err := h.services.Users.RefreshTokens(refreshToken)
+	err = h.cookieSessions.Save(c.Request, c.Writer, sessionWithValue)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.Header("Set-Cookie", "Authorization=Bearer "+refreshToken+"; HttpOnly; Path=/; Max-Age=3600")
-	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, nil)
+}
 
-	c.JSON(http.StatusOK, map[string]string{
-		"token": accessToken,
-	})
+// @Summary logout
+// @Tags auth
+// @Description logout
+// @ID log-out
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "session"
+// @Failure 400,500 {object} errorResponce
+// @Router /auth/log-out [get]
+func (h *Handler) logOut(c *gin.Context) {
+	session, err := h.cookieSessions.Get(c.Request, cookieName)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	sessionWithCacnel, err := h.services.Users.LogOut(session)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = h.cookieSessions.Save(c.Request, c.Writer, sessionWithCacnel)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }
 
 func handleNotFoundError(c *gin.Context, err error) {
@@ -128,17 +128,4 @@ func handleNotFoundError(c *gin.Context, err error) {
 
 	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusBadRequest, string(response))
-}
-
-func getTokenFromCookie(cookieValue string) (string, error) {
-	headerParts := strings.Split(cookieValue, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		return "", errors.New("invalid auth header")
-	}
-
-	if len(headerParts[1]) == 0 {
-		return "", errors.New("token is empty")
-	}
-
-	return headerParts[1], nil
 }
