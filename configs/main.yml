@@ -3,4 +3,4 @@ server:
 
 jwt:
   access_ttl: 15m
-  refresh_ttl: 30d
+  refresh_ttl: 1h

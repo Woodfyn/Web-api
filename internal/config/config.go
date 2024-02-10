@@ -56,18 +56,13 @@ func New(folder, filename, envfilename string) (*Config, error) {
 		return nil, err
 	}
 
-	v.SetConfigName(filename)
-	v.SetConfigType("yaml")
 	v.AddConfigPath(folder)
+	v.SetConfigName(filename)
 	if err := v.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
-	if err := v.Unmarshal(&cfg.Server); err != nil {
-		return nil, err
-	}
-
-	if err := v.Unmarshal(&cfg.JWT); err != nil {
+	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
