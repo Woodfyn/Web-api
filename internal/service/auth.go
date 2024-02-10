@@ -1,12 +1,11 @@
 package service
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
-	"github.com/Woodfyn/Web-api/pkg/auth"
+	"github.com/gorilla/sessions"
 )
 
 type PasswordHasher interface {
@@ -14,24 +13,14 @@ type PasswordHasher interface {
 }
 
 type User struct {
-	repo        psql.Users
-	sessionRepo psql.TokenSessions
-	hasher      PasswordHasher
-
-	tokenManager    auth.TokenManager
-	accessTokenTTL  time.Duration
-	refreshTokenTTL time.Duration
+	repo   psql.Users
+	hasher PasswordHasher
 }
 
-func NewServiceUser(repo psql.Users, sessionRepo psql.TokenSessions, hasher PasswordHasher, tokenManager auth.TokenManager, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *User {
+func NewServiceUser(repo psql.Users, hasher PasswordHasher) *User {
 	return &User{
-		repo:        repo,
-		sessionRepo: sessionRepo,
-		hasher:      hasher,
-
-		tokenManager:    tokenManager,
-		accessTokenTTL:  accessTokenTTL,
-		refreshTokenTTL: refreshTokenTTL,
+		repo:   repo,
+		hasher: hasher,
 	}
 }
 
@@ -55,56 +44,24 @@ func (s *User) SignUp(inp domain.SignUpInput) error {
 	return nil
 }
 
-func (s *User) SignIn(inp domain.SignInInput) (string, string, error) {
+func (s *User) SignIn(inp domain.SignInInput, session *sessions.Session) (*sessions.Session, error) {
 	hashPassword, err := s.hasher.Hash(inp.Password)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	user, err := s.repo.GetByCredentials(inp.Email, hashPassword)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	accessToken, refreshToken, err := s.genereteTokens(user.ID)
-	if err != nil {
-		return "", "", err
-	}
+	session.Values["user_id"] = user.ID
 
-	return accessToken, refreshToken, nil
+	return session, err
 }
 
-func (s *User) RefreshTokens(refreshToken string) (string, string, error) {
-	session, err := s.sessionRepo.Get(refreshToken)
-	if err != nil {
-		return "", "", err
-	}
+func (s *User) LogOut(session *sessions.Session) (*sessions.Session, error) {
+	session.Options.MaxAge = -1
 
-	if session.ExpiresAt.Unix() < time.Now().Unix() {
-		return "", "", domain.ErrRefreshTokenExpired
-	}
-
-	return s.genereteTokens(session.UserID)
-}
-
-func (s *User) genereteTokens(userId int) (string, string, error) {
-	accessToken, err := s.tokenManager.NewJWT(strconv.Itoa(userId), s.accessTokenTTL)
-	if err != nil {
-		return "", "", err
-	}
-
-	refreshToken, err := s.tokenManager.NewRefreshToken()
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := s.sessionRepo.Create(domain.RefreshSession{
-		UserID:    userId,
-		Token:     refreshToken,
-		ExpiresAt: time.Now().Add(1 * time.Hour),
-	}); err != nil {
-		return "", "", err
-	}
-
-	return accessToken, refreshToken, nil
+	return session, nil
 }

@@ -3,9 +3,9 @@ package rest
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,9 +18,9 @@ func loggingMiddleware() gin.HandlerFunc {
 	}
 }
 
-func authMiddleware() gin.HandlerFunc {
+func authMiddleware(store *sessions.CookieStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := getTokenFromRequest(c.Request)
+		err := getUserIdFromRequest(c, store)
 		if err != nil {
 			c.AbortWithError(http.StatusUnauthorized, err)
 			return
@@ -28,20 +28,16 @@ func authMiddleware() gin.HandlerFunc {
 	}
 }
 
-func getTokenFromRequest(r *http.Request) (string, error) {
-	header := r.Header.Get("Authorization")
-	if header == "" {
-		return "", errors.New("empty auth header")
+func getUserIdFromRequest(c *gin.Context, store *sessions.CookieStore) error {
+	session, err := store.Get(c.Request, "cookie-name")
+	if err != nil {
+		return err
 	}
 
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-		return "", errors.New("invalid auth header")
+	_, ok := session.Values["user_id"].(int)
+	if !ok {
+		return errors.New("can't get user id from session")
 	}
 
-	if len(headerParts[1]) == 0 {
-		return "", errors.New("token is empty")
-	}
-
-	return headerParts[1], nil
+	return nil
 }
