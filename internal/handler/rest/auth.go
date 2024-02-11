@@ -113,3 +113,30 @@ func getTokenFromCookie(cookieValue string) (string, error) {
 
 	return headerParts[1], nil
 }
+
+func (h *Handler) logOut(c *gin.Context) {
+	cookie, err := c.Request.Cookie("Authorization")
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	refreshToken, err := getTokenFromCookie(cookie.Value)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.services.Users.LogOut(refreshToken)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.SetCookie("Authorization", "", -1, "/", "localhost", false, true)
+
+	logrus.Info("User logged out")
+
+	c.Header("Content-Type", "application/json")
+	c.JSON(http.StatusOK, nil)
+}

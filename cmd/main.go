@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/Woodfyn/Web-api/internal/config"
@@ -29,17 +31,37 @@ import (
 const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
-	CONFIG_ENV  = "main"
+	CONFIG_ENV  = ".main"
+	LOG_FILE    = "logfile.log"
+	LOG_FOLDER  = "logs"
 )
 
 func init() {
+	logsDir := fmt.Sprintf("./%s", LOG_FOLDER)
+	err := os.MkdirAll(logsDir, os.ModePerm)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	logFile := filepath.Join(logsDir, LOG_FILE)
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	logrus.SetFormatter(new(logrus.JSONFormatter))
-	logrus.SetOutput(os.Stdout)
+	logrus.SetOutput(file)
 	logrus.SetLevel(logrus.InfoLevel)
 }
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			logrus.Errorf("recovered from panic: %v", err)
+		}
 
+		logrus.StandardLogger().Out.(*os.File).Close()
+	}()
 	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE, CONFIG_ENV)
 	logrus.Info(cfg)
 	if err != nil {
