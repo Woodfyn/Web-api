@@ -26,6 +26,7 @@ type Users interface {
 	SignUp(user domain.SignUpInput) error
 	SignIn(inp domain.SignInInput) (string, string, error)
 	RefreshTokens(refreshToken string) (string, string, error)
+	LogOut(refreshToken string) error
 }
 
 type Services struct {

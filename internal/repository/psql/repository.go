@@ -8,6 +8,7 @@ import (
 type TokenSessions interface {
 	Create(token domain.RefreshSession) error
 	Get(token string) (domain.RefreshSession, error)
+	Delete(token string) error
 }
 
 type Users interface {
