@@ -108,3 +108,7 @@ func (s *User) genereteTokens(userId int) (string, string, error) {
 
 	return accessToken, refreshToken, nil
 }
+
+func (s *User) LogOut(refreshToken string) error {
+	return s.sessionRepo.Delete(refreshToken)
+}

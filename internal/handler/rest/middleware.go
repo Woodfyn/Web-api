@@ -15,6 +15,8 @@ func loggingMiddleware() gin.HandlerFunc {
 			"method": c.Request.Method,
 			"uri":    c.Request.RequestURI,
 		}).Info()
+
+		c.Next()
 	}
 }
 
@@ -25,6 +27,10 @@ func authMiddleware() gin.HandlerFunc {
 			c.AbortWithError(http.StatusUnauthorized, err)
 			return
 		}
+
+		logrus.Info("User authorized")
+
+		c.Next()
 	}
 }
 

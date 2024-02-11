@@ -34,6 +34,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign-up", h.signUp)
 		auth.GET("/sign-in", h.signIn)
 		auth.GET("/refresh", h.refresh)
+		auth.POST("/logout", h.logOut)
 	}
 
 	api := router.Group("/api")

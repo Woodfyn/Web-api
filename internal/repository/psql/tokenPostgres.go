@@ -36,3 +36,8 @@ func (r *Tokens) Get(token string) (domain.RefreshSession, error) {
 
 	return t, err
 }
+
+func (r *Tokens) Delete(token string) error {
+	_, err := r.db.Exec(fmt.Sprintf("DELETE FROM %s WHERE token = $1", tokenTable), token)
+	return err
+}
