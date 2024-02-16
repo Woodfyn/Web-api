@@ -7,18 +7,15 @@ import (
 
 	_ "github.com/Woodfyn/Web-api/docs"
 	"github.com/Woodfyn/Web-api/internal/service"
-	"github.com/Woodfyn/Web-api/pkg/auth"
 )
 
 type Handler struct {
-	services     *service.Services
-	tokenManager auth.TokenManager
+	services *service.Services
 }
 
-func NewHandler(services *service.Services, tokenManager auth.TokenManager) *Handler {
+func NewHandler(services *service.Services) *Handler {
 	return &Handler{
-		services:     services,
-		tokenManager: tokenManager,
+		services: services,
 	}
 }
 

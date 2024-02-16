@@ -44,3 +44,7 @@ services:
       db:
         condition: service_healthy
     restart: on-failure
+
+networks:
+  app:
+    name: game-network

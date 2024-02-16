@@ -17,13 +17,17 @@ type Config struct {
 	}
 
 	Server struct {
-		Port string `mapstructure:"port"`
-	} `mapstructure:"server"`
+		Port string
+	}
+
+	GRPC struct {
+		Port string
+	}
 
 	JWT struct {
 		AccessTTL  time.Duration `mapstructure:"access_ttl"`
 		RefreshTTL time.Duration `mapstructure:"refresh_ttl"`
-	} `mapstructure:"jwt"`
+	}
 
 	Hash struct {
 		Salt string `mapstructure:"HASH_SALT"`

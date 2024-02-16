@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/Woodfyn/Web-api/internal/config"
+	"github.com/Woodfyn/Web-api/internal/handler/grpc"
 	"github.com/Woodfyn/Web-api/internal/handler/rest"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/internal/service"
@@ -32,36 +31,15 @@ const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
 	CONFIG_ENV  = ".main"
-	LOG_FILE    = "logfile.log"
-	LOG_FOLDER  = "logs"
 )
 
 func init() {
-	logsDir := fmt.Sprintf("./%s", LOG_FOLDER)
-	err := os.MkdirAll(logsDir, os.ModePerm)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	logFile := filepath.Join(logsDir, LOG_FILE)
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
 	logrus.SetFormatter(new(logrus.JSONFormatter))
-	logrus.SetOutput(file)
+	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
 }
 
 func main() {
-	defer func() {
-		if err := recover(); err != nil {
-			logrus.Errorf("recovered from panic: %v", err)
-		}
-
-		logrus.StandardLogger().Out.(*os.File).Close()
-	}()
 	cfg, err := config.New(CONFIG_DIR, CONFIG_FILE, CONFIG_ENV)
 	logrus.Info(cfg)
 	if err != nil {
@@ -88,9 +66,16 @@ func main() {
 
 	repos := psql.NewRepositories(db)
 
+	auditClient, err := grpc.NewClient(cfg.GRPC.Port)
+	if err != nil {
+		logrus.Fatalf("No init audit client: %s", err.Error())
+	}
+
 	deps := service.Deps{
-		Repos:           repos,
-		Hasher:          hasher,
+		Repos:  repos,
+		Hasher: hasher,
+
+		AuditClient:     auditClient,
 		TokenManager:    tokenManager,
 		AccessTokenTTL:  cfg.JWT.AccessTTL,
 		RefreshTokenTTL: cfg.JWT.RefreshTTL,
@@ -98,7 +83,7 @@ func main() {
 
 	service := service.NewServices(deps)
 
-	handlers := rest.NewHandler(service, tokenManager)
+	handlers := rest.NewHandler(service)
 
 	srv := new(server.Server)
 
@@ -108,7 +93,7 @@ func main() {
 		}
 	}()
 
-	logrus.Info("SERVER STARTED")
+	logrus.Info("SERVER STARTING...")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
@@ -116,7 +101,7 @@ func main() {
 
 	logrus.Info("SERVER STOPPED")
 
-	if err := srv.Shutdown(context.TODO()); err != nil {
+	if err := srv.Shutdown(context.Background()); err != nil {
 		logrus.Errorf("errer occured on server shutting down: %s", err.Error())
 	}
 
