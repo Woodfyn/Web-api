@@ -25,6 +25,14 @@ func (r *UsersPostgres) Create(inp domain.User) error {
 	return err
 }
 
+func (r *UsersPostgres) Get(id int) (domain.User, error) {
+	var user domain.User
+	err := r.db.QueryRow(fmt.Sprintf("SELECT id, name, email, registered_at FROM %s WHERE id=$1", userTable), id).
+		Scan(&user.ID, &user.Name, &user.Email, &user.RegisteredAt)
+
+	return user, err
+}
+
 func (r *UsersPostgres) GetByCredentials(email, password string) (domain.User, error) {
 	var user domain.User
 	err := r.db.QueryRow(fmt.Sprintf("SELECT id, name, email, registered_at FROM %s WHERE email=$1 AND password=$2", userTable), email, password).
