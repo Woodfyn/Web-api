@@ -1,14 +1,13 @@
 package service
 
 import (
-	"context"
 	"time"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/pkg/auth"
 	"github.com/Woodfyn/Web-api/pkg/hash"
-	audit "github.com/Woodfyn/auditLog/pkg/core"
+	"github.com/Woodfyn/auditLog/pkg/core"
 )
 
 type Tokens struct {
@@ -31,8 +30,8 @@ type Users interface {
 	LogOut(refreshToken string) error
 }
 
-type AuditClient interface {
-	SendLogRequest(ctx context.Context, req audit.LogItem) error
+type MQClient interface {
+	Publisher(item core.LogItem) error
 }
 
 type Services struct {
@@ -44,7 +43,7 @@ type Deps struct {
 	Repos  *psql.Repositories
 	Hasher hash.PasswordHasher
 
-	AuditClient     AuditClient
+	MQClient        MQClient
 	TokenManager    auth.TokenManager
 	AccessTokenTTL  time.Duration
 	RefreshTokenTTL time.Duration
@@ -52,7 +51,7 @@ type Deps struct {
 
 func NewServices(deps Deps) *Services {
 	return &Services{
-		Games: NewServiceGame(deps.Repos.Games, deps.AuditClient),
-		Users: NewServiceUser(deps.Repos.Users, deps.Repos.Tokens, deps.Hasher, deps.AuditClient, deps.TokenManager, deps.AccessTokenTTL, deps.RefreshTokenTTL),
+		Games: NewServiceGame(deps.Repos.Games, deps.MQClient),
+		Users: NewServiceUser(deps.Repos.Users, deps.Repos.Tokens, deps.Hasher, deps.MQClient, deps.TokenManager, deps.AccessTokenTTL, deps.RefreshTokenTTL),
 	}
 }

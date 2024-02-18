@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/Woodfyn/Web-api/internal/config"
-	"github.com/Woodfyn/Web-api/internal/handler/grpc"
+	"github.com/Woodfyn/Web-api/internal/handler/mq"
 	"github.com/Woodfyn/Web-api/internal/handler/rest"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/internal/service"
@@ -66,16 +66,22 @@ func main() {
 
 	repos := psql.NewRepositories(db)
 
-	auditClient, err := grpc.NewClient(cfg.GRPC.Port)
+	mqClient := mq.New()
 	if err != nil {
 		logrus.Fatalf("No init audit client: %s", err.Error())
 	}
+
+	if err := mqClient.Init(cfg); err != nil {
+		logrus.Fatal(err)
+	}
+
+	defer mqClient.Close()
 
 	deps := service.Deps{
 		Repos:  repos,
 		Hasher: hasher,
 
-		AuditClient:     auditClient,
+		MQClient:        mqClient,
 		TokenManager:    tokenManager,
 		AccessTokenTTL:  cfg.JWT.AccessTTL,
 		RefreshTokenTTL: cfg.JWT.RefreshTTL,

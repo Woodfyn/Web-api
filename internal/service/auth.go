@@ -1,14 +1,13 @@
 package service
 
 import (
-	"context"
 	"strconv"
 	"time"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
 	"github.com/Woodfyn/Web-api/internal/repository/psql"
 	"github.com/Woodfyn/Web-api/pkg/auth"
-	audit "github.com/Woodfyn/auditLog/pkg/core"
+	"github.com/Woodfyn/auditLog/pkg/core"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,19 +20,19 @@ type User struct {
 	sessionRepo psql.TokenSessions
 	hasher      PasswordHasher
 
-	audit           AuditClient
+	mq              MQClient
 	tokenManager    auth.TokenManager
 	accessTokenTTL  time.Duration
 	refreshTokenTTL time.Duration
 }
 
-func NewServiceUser(repo psql.Users, sessionRepo psql.TokenSessions, hasher PasswordHasher, audit AuditClient, tokenManager auth.TokenManager, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *User {
+func NewServiceUser(repo psql.Users, sessionRepo psql.TokenSessions, hasher PasswordHasher, mq MQClient, tokenManager auth.TokenManager, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *User {
 	return &User{
 		repo:        repo,
 		sessionRepo: sessionRepo,
 		hasher:      hasher,
 
-		audit:           audit,
+		mq:              mq,
 		tokenManager:    tokenManager,
 		accessTokenTTL:  accessTokenTTL,
 		refreshTokenTTL: refreshTokenTTL,
@@ -62,9 +61,9 @@ func (s *User) SignUp(inp domain.SignUpInput) error {
 		return err
 	}
 
-	if err := s.audit.SendLogRequest(context.TODO(), audit.LogItem{
-		Action:    audit.ACTION_REGISTER,
-		Entity:    audit.ENTITY_USER,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "SignUp",
+		Entity:    "User",
 		EntityID:  int64(user.ID),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -92,9 +91,9 @@ func (s *User) SignIn(inp domain.SignInInput) (string, string, error) {
 		return "", "", err
 	}
 
-	if err := s.audit.SendLogRequest(context.TODO(), audit.LogItem{
-		Action:    audit.ACTION_LOGIN,
-		Entity:    audit.ENTITY_USER,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "SignIn",
+		Entity:    "User",
 		EntityID:  int64(user.ID),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -116,9 +115,9 @@ func (s *User) RefreshTokens(refreshToken string) (string, string, error) {
 		return "", "", domain.ErrRefreshTokenExpired
 	}
 
-	if err := s.audit.SendLogRequest(context.TODO(), audit.LogItem{
-		Action:    audit.ACTION_LOGIN,
-		Entity:    audit.ENTITY_USER,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "RefreshTokens",
+		Entity:    "User",
 		EntityID:  int64(session.ID),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -163,9 +162,9 @@ func (s *User) LogOut(refreshToken string) error {
 		return err
 	}
 
-	if err := s.audit.SendLogRequest(context.TODO(), audit.LogItem{
-		Action:    audit.ACTION_LOGOUT,
-		Entity:    audit.ENTITY_USER,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "LogOut",
+		Entity:    "User",
 		EntityID:  int64(user.ID),
 		Timestamp: time.Now(),
 	}); err != nil {

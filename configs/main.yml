@@ -1,8 +1,8 @@
 server:
   port: "8000"
 
-grpc:
-  port: "9000"
+mq:
+  port: "5672"
 
 jwt:
   access_ttl: 15m
