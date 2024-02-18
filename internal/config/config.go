@@ -20,8 +20,11 @@ type Config struct {
 		Port string
 	}
 
-	GRPC struct {
-		Port string
+	MQ struct {
+		Username string `mapstructure:"RABBIT_USERNAME"`
+		Password string `mapstructure:"RABBIT_PASSWORD"`
+		Host     string `mapstructure:"RABBIT_HOST"`
+		Port     int    `mapstructure:"RABBIT_PORT"`
 	}
 
 	JWT struct {
@@ -57,6 +60,10 @@ func New(folder, filename, envfilename string) (*Config, error) {
 	}
 
 	if err := v.Unmarshal(&cfg.Auth); err != nil {
+		return nil, err
+	}
+
+	if err := v.Unmarshal(&cfg.MQ); err != nil {
 		return nil, err
 	}
 

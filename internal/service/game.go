@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"time"
 
 	"github.com/Woodfyn/Web-api/internal/domain"
@@ -11,21 +10,21 @@ import (
 )
 
 type Game struct {
-	repo  psql.Games
-	audit AuditClient
+	repo psql.Games
+	mq   MQClient
 }
 
-func NewServiceGame(repo psql.Games, audit AuditClient) *Game {
+func NewServiceGame(repo psql.Games, mq MQClient) *Game {
 	return &Game{
-		repo:  repo,
-		audit: audit,
+		repo: repo,
+		mq:   mq,
 	}
 }
 
 func (s *Game) Create(game domain.Game) error {
-	if err := s.audit.SendLogRequest(context.TODO(), core.LogItem{
-		Action:    core.ACTION_CREATE,
-		Entity:    core.ENTITY_GAME,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "Create",
+		Entity:    "Game",
 		EntityID:  int64(game.Id),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -38,9 +37,9 @@ func (s *Game) Create(game domain.Game) error {
 }
 
 func (s *Game) GetAll() ([]domain.Game, error) {
-	if err := s.audit.SendLogRequest(context.TODO(), core.LogItem{
-		Action:    core.ACTION_GET,
-		Entity:    core.ENTITY_GAME,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "GetAll",
+		Entity:    "Game",
 		EntityID:  0,
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -53,9 +52,9 @@ func (s *Game) GetAll() ([]domain.Game, error) {
 }
 
 func (s *Game) GetById(gameId int) (domain.Game, error) {
-	if err := s.audit.SendLogRequest(context.TODO(), core.LogItem{
-		Action:    core.ACTION_GET,
-		Entity:    core.ENTITY_GAME,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "GetById",
+		Entity:    "Game",
 		EntityID:  int64(gameId),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -68,9 +67,9 @@ func (s *Game) GetById(gameId int) (domain.Game, error) {
 }
 
 func (s *Game) Update(gameId int, input domain.UpdateGameInput) error {
-	if err := s.audit.SendLogRequest(context.TODO(), core.LogItem{
-		Action:    core.ACTION_UPDATE,
-		Entity:    core.ENTITY_GAME,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "Update",
+		Entity:    "Game",
 		EntityID:  int64(gameId),
 		Timestamp: time.Now(),
 	}); err != nil {
@@ -83,9 +82,9 @@ func (s *Game) Update(gameId int, input domain.UpdateGameInput) error {
 }
 
 func (s *Game) Delete(gameId int) error {
-	if err := s.audit.SendLogRequest(context.TODO(), core.LogItem{
-		Action:    core.ACTION_DELETE,
-		Entity:    core.ENTITY_GAME,
+	if err := s.mq.Publisher(core.LogItem{
+		Action:    "Delete",
+		Entity:    "Game",
 		EntityID:  int64(gameId),
 		Timestamp: time.Now(),
 	}); err != nil {
