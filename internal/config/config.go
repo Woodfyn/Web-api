@@ -7,35 +7,42 @@ import (
 )
 
 type Config struct {
-	DB struct {
-		Host     string `mapstructure:"DB_HOST"`
-		Port     string `mapstructure:"DB_PORT"`
-		Username string `mapstructure:"DB_USERNAME"`
-		Name     string `mapstructure:"DB_NAME"`
-		SSLMode  string `mapstructure:"DB_SSLMODE"`
-		Password string `mapstructure:"DB_PASSWORD"`
-	}
+	DB     DB
+	Server Server
+	GRPC   GRPC
+	JWT    JWT
+	Hash   Hash
+	Auth   Auth
+}
 
-	Server struct {
-		Port string
-	}
+type DB struct {
+	Host     string `mapstructure:"DB_HOST"`
+	Port     string `mapstructure:"DB_PORT"`
+	Username string `mapstructure:"DB_USERNAME"`
+	Name     string `mapstructure:"DB_NAME"`
+	SSLMode  string `mapstructure:"DB_SSLMODE"`
+	Password string `mapstructure:"DB_PASSWORD"`
+}
 
-	GRPC struct {
-		Port string
-	}
+type Server struct {
+	Port string
+}
 
-	JWT struct {
-		AccessTTL  time.Duration `mapstructure:"access_ttl"`
-		RefreshTTL time.Duration `mapstructure:"refresh_ttl"`
-	}
+type GRPC struct {
+	Port string
+}
 
-	Hash struct {
-		Salt string `mapstructure:"HASH_SALT"`
-	}
+type JWT struct {
+	AccessTTL  time.Duration `mapstructure:"access_ttl"`
+	RefreshTTL time.Duration `mapstructure:"refresh_ttl"`
+}
 
-	Auth struct {
-		Secret string `mapstructure:"AUTH_SECRET"`
-	}
+type Hash struct {
+	Salt string `mapstructure:"HASH_SALT"`
+}
+
+type Auth struct {
+	Secret string `mapstructure:"AUTH_SECRET"`
 }
 
 func New(folder, filename, envfilename string) (*Config, error) {
