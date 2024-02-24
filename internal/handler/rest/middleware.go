@@ -20,15 +20,21 @@ func loggingMiddleware() gin.HandlerFunc {
 	}
 }
 
-func authMiddleware() gin.HandlerFunc {
+func (h *Handler) userIdentity() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := getTokenFromRequest(c.Request)
+		token, err := getTokenFromRequest(c.Request)
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, err)
+			newErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		logrus.Info("User authorized")
+		userId, err := h.services.Users.ParseToken(token)
+		if err != nil {
+			newErrorResponse(c, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		logrus.Infof("User with id %s auth", userId)
 
 		c.Next()
 	}

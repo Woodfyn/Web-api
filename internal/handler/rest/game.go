@@ -10,6 +10,7 @@ import (
 )
 
 // @Summary AddGame
+// @Security ApiKeyAuth
 // @Tags game
 // @Description add new game
 // @ID add-game
@@ -17,8 +18,8 @@ import (
 // @Produce json
 // @Param input body domain.Game true "game info"
 // @Success 200 {integer} integer 1
-// @Failure 400,500 {object} errorResponce
-// @Router /game [post]
+// @Failure 400,500 {object} errorResponse
+// @Router /api/game [post]
 func (h *Handler) addGame(c *gin.Context) {
 	var input domain.Game
 	if err := c.BindJSON(&input); err != nil {
@@ -36,14 +37,15 @@ func (h *Handler) addGame(c *gin.Context) {
 }
 
 // @Summary GetAll
+// @Security ApiKeyAuth
 // @Tags game
 // @Description getAll games
 // @ID get-all
 // @Accept json
 // @Produce json
 // @Success 200 {object} getAllGameResponse
-// @Failure 400,500 {object} errorResponce
-// @Router /game [get]
+// @Failure 400,500 {object} errorResponse
+// @Router /api/game [get]
 func (h *Handler) getAllGame(c *gin.Context) {
 	games, err := h.services.Games.GetAll()
 	if err != nil {
@@ -57,6 +59,7 @@ func (h *Handler) getAllGame(c *gin.Context) {
 }
 
 // @Summary GetGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description get game by id
 // @ID get-game-by-id
@@ -64,11 +67,16 @@ func (h *Handler) getAllGame(c *gin.Context) {
 // @Produce json
 // @Param id path int true "game id"
 // @Success 200 {object} domain.Game
-// @Failure 400,500 {object} errorResponce
-// @Router /game/{id} [get]
+// @Failure 400,500 {object} errorResponse
+// @Router /api/game/{id} [get]
 func (h *Handler) getGameByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id parameter")
+		return
+	}
+
+	if id < 1 {
 		newErrorResponse(c, http.StatusBadRequest, "invalid id parameter")
 		return
 	}
@@ -83,6 +91,7 @@ func (h *Handler) getGameByID(c *gin.Context) {
 }
 
 // @Summary UpdateGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description update game by id
 // @ID update-game
@@ -90,8 +99,8 @@ func (h *Handler) getGameByID(c *gin.Context) {
 // @Produce json
 // @Param id path int true "game id"
 // @Success 200 {object} statusResponse
-// @Failure 400,500 {object} errorResponce
-// @Router /game/{id} [put]
+// @Failure 400,500 {object} errorResponse
+// @Router /api/game/{id} [put]
 func (h *Handler) updateGameByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -114,6 +123,7 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 }
 
 // @Summary DeleteGameByID
+// @Security ApiKeyAuth
 // @Tags game
 // @Description delete game by id
 // @ID delete-game
@@ -121,11 +131,16 @@ func (h *Handler) updateGameByID(c *gin.Context) {
 // @Produce json
 // @Param id path int true "game id"
 // @Success 200 {object} statusResponse
-// @Failure 400,500 {object} errorResponce
-// @Router /game/{id} [delete]
+// @Failure 400,500 {object} errorResponse
+// @Router /api/game/{id} [delete]
 func (h *Handler) deleteGameByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	if id < 1 {
 		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
 		return
 	}

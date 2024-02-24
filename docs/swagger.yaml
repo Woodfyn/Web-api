@@ -13,7 +13,33 @@ definitions:
     required:
     - title
     type: object
-  rest.errorResponce:
+  domain.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  domain.SignUpInput:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 2
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  rest.errorResponse:
     properties:
       message:
         type: string
@@ -37,7 +63,7 @@ info:
   title: GameList API
   version: "1.0"
 paths:
-  /game:
+  /api/game:
     get:
       consumes:
       - application/json
@@ -53,11 +79,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: GetAll
       tags:
       - game
@@ -83,15 +111,17 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: AddGame
       tags:
       - game
-  /game/{id}:
+  /api/game/{id}:
     delete:
       consumes:
       - application/json
@@ -113,11 +143,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: DeleteGameByID
       tags:
       - game
@@ -142,11 +174,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: GetGameByID
       tags:
       - game
@@ -171,12 +205,126 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/rest.errorResponce'
+            $ref: '#/definitions/rest.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: UpdateGameByID
       tags:
       - game
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: logout
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: LogOut
+      tags:
+      - auth
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      description: refresh
+      operationId: refresh
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: Refresh
+      tags:
+      - auth
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: login
+      operationId: login
+      parameters:
+      - description: credentials
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: SignIn
+      tags:
+      - auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: create account
+      operationId: create-account
+      parameters:
+      - description: account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: SignUp
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    description: Type "Bearer" followed by a space and JWT token
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -11,6 +11,8 @@ import (
 	audit "github.com/Woodfyn/auditLog/pkg/core"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type Tokens struct {
 	AccessToken  string
 	RefreshToken string
@@ -28,6 +30,7 @@ type Users interface {
 	SignUp(user domain.SignUpInput) error
 	SignIn(inp domain.SignInInput) (string, string, error)
 	RefreshTokens(refreshToken string) (string, string, error)
+	ParseToken(token string) (string, error)
 	LogOut(refreshToken string) error
 }
 

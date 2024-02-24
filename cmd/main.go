@@ -27,6 +27,11 @@ import (
 // @host localhost:8000
 // @BasePath /api
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
+
 const (
 	CONFIG_DIR  = "configs"
 	CONFIG_FILE = "main"
