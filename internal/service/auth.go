@@ -152,6 +152,15 @@ func (s *User) genereteTokens(userId int) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
+func (s *User) ParseToken(token string) (string, error) {
+	id, err := s.tokenManager.Parse(token)
+	if err != nil {
+		return "", err
+	}
+
+	return id, err
+}
+
 func (s *User) LogOut(refreshToken string) error {
 	refreshSession, err := s.sessionRepo.GetByRefreshToken(refreshToken)
 	if err != nil {

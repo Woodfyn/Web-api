@@ -6,3 +6,6 @@ run:
 
 swagger:
 	swag init -g cmd/main.go
+
+gen:
+	mockgen -source=internal/service/service.go -destination=internal/service/mocks/mock.go

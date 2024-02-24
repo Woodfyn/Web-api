@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -34,12 +36,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/logout", h.logOut)
 	}
 
-	api := router.Group("/api")
+	api := router.Group("/api", h.userIdentity())
 	{
 		game := api.Group("/game")
 		{
-			game.Use(authMiddleware())
-
 			game.POST("/", h.addGame)
 			game.GET("/", h.getAllGame)
 			game.GET("/:id", h.getGameByID)
@@ -48,6 +48,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		}
 
 	}
+
+	router.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
 
 	return router
 }

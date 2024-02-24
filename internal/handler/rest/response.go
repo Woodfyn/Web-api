@@ -10,7 +10,7 @@ type getAllGameResponse struct {
 	Data []domain.Game `json:"data"`
 }
 
-type errorResponce struct {
+type errorResponse struct {
 	Message string `json:"message"`
 }
 
@@ -20,5 +20,5 @@ type statusResponse struct {
 
 func newErrorResponse(c *gin.Context, statusCode int, message string) {
 	logrus.Error(message)
-	c.AbortWithStatusJSON(statusCode, errorResponce{Message: message})
+	c.AbortWithStatusJSON(statusCode, errorResponse{Message: message})
 }
