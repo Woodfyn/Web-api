@@ -1,0 +1,9 @@
+server:
+  port: "8000"
+
+grpc:
+  port: "9000"
+
+jwt:
+  access_ttl: 15m
+  refresh_ttl: 1h
